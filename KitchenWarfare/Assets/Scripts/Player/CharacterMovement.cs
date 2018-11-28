@@ -1,0 +1,145 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(CharacterController))]
+public class CharacterMovement : MonoBehaviour
+{
+    Animator animator;
+    CharacterController charController;
+
+    [Serializable]
+    public class AnimationSettings
+    {
+        public string verticalVelocityFloat = "Forward";
+        public string horizontalVelocityFloat = "Strafe";
+        public string groundedBool = "isGrounded";
+        public string jumpBool = "isJumping";
+    }
+    [SerializeField]
+    public AnimationSettings animations;
+
+    [Serializable]
+    public class PhysicsSettings
+    {
+        public float gravityModifier = 9.81f;
+        public float baseGravity = 50.0f;
+        public float resetGravityValue = 1.2f;
+    }
+    [SerializeField]
+    public PhysicsSettings physics;
+
+    [Serializable]
+    public class MovementSettings
+    {
+        public float jumpSpeed = 6;
+        public float jumpTime = 0.25f;
+    }
+    [SerializeField]
+    public MovementSettings movement;
+
+    private bool isGrounded = true;
+    private bool isJumping;    
+    private bool resetGravity;
+    private float gravity;
+
+    //Use this for initilization
+    private void Start()
+    {
+        animator = GetComponent<Animator>();
+        charController = GetComponent<CharacterController>();
+        SetupAnimator();
+    }
+
+    //Update is called once per frame
+    private void Update()
+    {
+        ApplyGravity();
+        isGrounded = charController.isGrounded;
+    }
+
+    //Animate character
+    public void Animate(float forward, float strafe)
+    {
+        animator.SetFloat(animations.verticalVelocityFloat, forward);
+        animator.SetFloat(animations.horizontalVelocityFloat, strafe);
+        animator.SetBool(animations.groundedBool, isGrounded);
+        animator.SetBool(animations.jumpBool, isJumping);
+    }
+
+    //Jumping controller
+    public void Jump()
+    {
+        if (isJumping)
+        {
+            return;
+        }
+
+        if (isGrounded)
+        {
+            isJumping = true;
+            StartCoroutine(StopJump());
+        }
+    }
+
+    IEnumerator StopJump()
+    {
+        yield return new WaitForSeconds(movement.jumpTime);
+        isJumping = false;
+    }
+
+    private void ApplyGravity()
+    {
+        if (!charController.isGrounded)
+        {
+            if (!resetGravity)
+            {
+                gravity = physics.resetGravityValue;
+                resetGravity = true;
+            }
+
+            gravity += Time.deltaTime * physics.gravityModifier;
+        }
+        else
+        {
+            gravity = physics.baseGravity;
+            resetGravity = false;
+        }
+
+        Vector3 gravVector = new Vector3();
+        
+        if (!isJumping)
+        {
+            gravVector.y -= gravity;
+        }
+        else
+        {
+            gravVector.y = movement.jumpSpeed;
+        }
+
+        charController.Move(gravVector * Time.deltaTime);
+    }
+
+    //Sets up the animator with the child avatar
+    private void SetupAnimator()
+    {
+        Animator[] animators = GetComponentsInChildren<Animator>();
+
+        if (animators.Length > 0)
+        {
+            for (int i = 0; i < animators.Length; i++)
+            {
+                Animator anim = animators[i];
+                Avatar av = anim.avatar;
+
+                if (anim != animator)
+                {
+                    animator.avatar = av;
+                    Destroy(anim);
+                }
+            }
+        }
+    }
+}
