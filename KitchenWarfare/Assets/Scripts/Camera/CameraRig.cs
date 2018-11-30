@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [ExecuteInEditMode]
-public class CameraRig : MonoBehaviour {
+public class CameraRig : MonoBehaviour
+{
 
     public Transform target;
     public bool autoTargetPlayer;

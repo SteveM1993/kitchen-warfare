@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEditor;
 
 [CustomEditor(typeof(CameraRig))]
-public class CameraRigEditor : Editor {
+public class CameraRigEditor : Editor
+{
 
     CameraRig cameraRig;
 

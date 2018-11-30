@@ -125,21 +125,10 @@ public class CharacterMovement : MonoBehaviour
     //Sets up the animator with the child avatar
     private void SetupAnimator()
     {
-        Animator[] animators = GetComponentsInChildren<Animator>();
+        Animator wantedAnim = GetComponentsInChildren<Animator>()[1];
+        Avatar wantedAvatar = wantedAnim.avatar;
 
-        if (animators.Length > 0)
-        {
-            for (int i = 0; i < animators.Length; i++)
-            {
-                Animator anim = animators[i];
-                Avatar av = anim.avatar;
-
-                if (anim != animator)
-                {
-                    animator.avatar = av;
-                    Destroy(anim);
-                }
-            }
-        }
+        animator.avatar = wantedAvatar;
+        Destroy(wantedAnim);
     }
 }
