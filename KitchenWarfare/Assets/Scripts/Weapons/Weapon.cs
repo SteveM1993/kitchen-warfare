@@ -44,6 +44,7 @@ public class Weapon : MonoBehaviour
         public GameObject mag;
 
         [Header("-Other-")]
+        public GameObject crosshair;
         public float reloadSpeed = 2.0f;
         public Transform shellEjectSpot;
         public float shellEjectSpeed = 7.5f;
@@ -74,6 +75,9 @@ public class Weapon : MonoBehaviour
     [SerializeField]
     public Ammunition ammunition;
 
+    public Ray shootRay { protected get; set; }
+    public bool ownerAiming { get; set; }
+
     WeaponHandler owner;
     bool equipped;
     bool trigger;
@@ -85,6 +89,12 @@ public class Weapon : MonoBehaviour
         col = GetComponent<Collider>();
         rigidBody = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
+
+        if (wepSettings.crosshair != null)
+        {
+            wepSettings.crosshair = Instantiate(wepSettings.crosshair);
+            CrosshairToggle(false);
+        }
 	}
 	
 	// Update is called once per frame
@@ -102,7 +112,16 @@ public class Weapon : MonoBehaviour
 
                     if (trigger)
                     {
-                        Fire();
+                        Fire(shootRay);
+                    }
+
+                    if (ownerAiming)
+                    {
+                        CrosshairToggle(true);
+                    }
+                    else
+                    {
+                        CrosshairToggle(false);
                     }
                 }
             }
@@ -115,11 +134,12 @@ public class Weapon : MonoBehaviour
         {
             DisableEnableComponents(true);
             transform.SetParent(null);
+            ownerAiming = false;
         }
 	}
 
     //Fires weapon
-    private void Fire()
+    private void Fire(Ray ray)
     {
         if (ammunition.magAmmo <= 0 || resettingCartrige || !wepSettings.ammoSpawn)
         {
@@ -129,25 +149,62 @@ public class Weapon : MonoBehaviour
         RaycastHit hit;
         Transform aSpawn = wepSettings.ammoSpawn;
         Vector3 aSpawnPoint = aSpawn.position;
-        Vector3 aDirection = aSpawn.forward;
+        Vector3 aDirection = ray.GetPoint(wepSettings.range);
 
         aDirection += (Vector3)UnityEngine.Random.insideUnitCircle * wepSettings.ammoSpread;
 
         if (Physics.Raycast(aSpawnPoint, aDirection, out hit ,wepSettings.range, wepSettings.ammoLayers))
         {
-            if (hit.collider.gameObject.isStatic)
+            HitEffects(hit);
+        }
+
+        WeaponEffects();
+
+        if (wepSettings.useAnimation)
+        {
+            animator.Play(wepSettings.fireAnimationName, wepSettings.fireAnimationLayer);
+        }
+
+        ammunition.magAmmo--;
+        resettingCartrige = true;
+        StartCoroutine(LoadNextRound());
+    }
+
+    //Loads next round
+    private IEnumerator LoadNextRound()
+    {
+        yield return new WaitForSeconds(wepSettings.fireRate);
+        resettingCartrige = false;
+    }
+
+    //Effects when something is hit
+    private void HitEffects(RaycastHit hit)
+    {
+        if (hit.collider.gameObject.isStatic)
+        {
+            if (wepSettings.decal)
             {
-                if (wepSettings.decal)
-                {
-                    Vector3 hitPoint = hit.point;
-                    Quaternion lookRotation = Quaternion.LookRotation(hit.normal);
-                    GameObject decal = Instantiate(wepSettings.decal, hitPoint, lookRotation) as GameObject;
-                    Transform decalTransform = decal.transform;
-                    Transform hitTransform = hit.transform;
-                    decalTransform.SetParent(hitTransform);
-                    Destroy(decal, UnityEngine.Random.Range(30.0f, 45.0f));
-                }
+                Vector3 hitPoint = hit.point;
+                Quaternion lookRotation = Quaternion.LookRotation(hit.normal);
+                GameObject decal = Instantiate(wepSettings.decal, hitPoint, lookRotation) as GameObject;
+                Transform decalTransform = decal.transform;
+                Transform hitTransform = hit.transform;
+                decalTransform.SetParent(hitTransform);
+                Destroy(decal, UnityEngine.Random.Range(30.0f, 45.0f));
             }
+        }
+    }
+
+    //Weapon effects
+    private void WeaponEffects()
+    {
+        if (wepSettings.muzzleFlash)
+        {
+            Vector3 roundSpawnPos = wepSettings.ammoSpawn.position;
+            GameObject muzzleFlash = Instantiate(wepSettings.muzzleFlash, roundSpawnPos, Quaternion.identity) as GameObject;
+            Transform muzzleT = muzzleFlash.transform;
+            muzzleT.SetParent(wepSettings.ammoSpawn);
+            Destroy(muzzleFlash, 1.0f);
         }
 
         if (wepSettings.shell)
@@ -167,22 +224,15 @@ public class Weapon : MonoBehaviour
                 Destroy(shell, UnityEngine.Random.Range(30.0f, 45.0f));
             }
         }
-
-        if (wepSettings.useAnimation)
-        {
-            animator.Play(wepSettings.fireAnimationName, wepSettings.fireAnimationLayer);
-        }
-
-        ammunition.magAmmo--;
-        resettingCartrige = true;
-        StartCoroutine(LoadNextRound());
     }
-
-    //Loads next round
-    private IEnumerator LoadNextRound()
+    
+    //Toggle crosshair
+    private void CrosshairToggle(bool enabled)
     {
-        yield return new WaitForSeconds(wepSettings.fireRate);
-        resettingCartrige = false;
+        if (wepSettings.crosshair != null)
+        {
+            wepSettings.crosshair.SetActive(enabled);
+        }
     }
 
     //Disables/Enables components

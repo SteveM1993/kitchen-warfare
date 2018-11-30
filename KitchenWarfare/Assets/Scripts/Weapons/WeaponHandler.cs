@@ -49,10 +49,19 @@ public class WeaponHandler : MonoBehaviour
             currentWeapon.SetEquip(true);
             currentWeapon.SetOwner(this);
             AddWeapon(currentWeapon);
+            currentWeapon.ownerAiming = aim;
 
             if(currentWeapon.ammunition.magAmmo <= 0)
             {
                 Reload();
+            }
+
+            if (reload)
+            {
+                if (settingWeapon)
+                {
+                    reload = false;
+                }
             }
         }
 
@@ -119,7 +128,7 @@ public class WeaponHandler : MonoBehaviour
             return;
         }
 
-        currentWeapon.Trigger(pulling);
+        currentWeapon.Trigger(pulling && aim && !reload);
     }
 
     //Reloads weapon
@@ -163,12 +172,13 @@ public class WeaponHandler : MonoBehaviour
         currentWeapon.SetEquip(false);
         currentWeapon.SetOwner(null);
         weaponsList.Remove(currentWeapon);
+        currentWeapon = null;
     }
 
     //Switches weapon
     public void SwitchWeapon()
     {
-        if (settingWeapon)
+        if (settingWeapon || weaponsList.Count == 0)
         {
             return;
         }

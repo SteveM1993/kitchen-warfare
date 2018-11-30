@@ -45,12 +45,17 @@ public class CharacterMovement : MonoBehaviour
     private bool resetGravity;
     private float gravity;
 
+    //Pre-load init
+    private void Awake()
+    {
+        animator = GetComponent<Animator>();
+        SetupAnimator();
+    }
+
     //Use this for initilization
     private void Start()
     {
-        animator = GetComponent<Animator>();
         charController = GetComponent<CharacterController>();
-        SetupAnimator();
     }
 
     //Update is called once per frame

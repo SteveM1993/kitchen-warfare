@@ -6,8 +6,8 @@ using UnityEngine;
 public class UserInput : MonoBehaviour
 {
 
-    CharacterMovement characterMove;
-    WeaponHandler weaponHandler;
+    public CharacterMovement characterMove { get; protected set; }
+    public WeaponHandler weaponHandler { get; protected set; }
 
     [Serializable]
     public class InputSettings
@@ -118,29 +118,33 @@ public class UserInput : MonoBehaviour
 
         aiming = Input.GetButton(input.aimButton) || debugAim;
 
-        if (weaponHandler.currentWeapon)
+        weaponHandler.Aim(aiming);
+
+        other.requireInputForTurn = !aiming;
+
+        weaponHandler.FingerOnTrigger(Input.GetButton(input.fireButton));
+
+        if (Input.GetButtonDown(input.reloadButton))
         {
-            weaponHandler.Aim(aiming);
-
-            other.requireInputForTurn = !aiming;
-
-            weaponHandler.FingerOnTrigger(Input.GetButton(input.fireButton));
-
-            if (Input.GetButtonDown(input.reloadButton))
-            {
-                weaponHandler.Reload();
-            }
-
-            if (Input.GetButtonDown(input.dropWeapon))
-            {
-                weaponHandler.DropWeapon();
-            }
-
-            if (Input.GetButtonDown(input.switchWeapon))
-            {
-                weaponHandler.SwitchWeapon();
-            }
+            weaponHandler.Reload();
         }
+
+        if (Input.GetButtonDown(input.dropWeapon))
+        {
+            weaponHandler.DropWeapon();
+        }
+
+        if (Input.GetButtonDown(input.switchWeapon))
+        {
+            weaponHandler.SwitchWeapon();
+        }
+
+        if (!weaponHandler.currentWeapon)
+        {
+            return;
+        }
+
+        weaponHandler.currentWeapon.shootRay = new Ray(mainCam.transform.position, mainCam.transform.forward);
     }
 
     //Positions the spine
