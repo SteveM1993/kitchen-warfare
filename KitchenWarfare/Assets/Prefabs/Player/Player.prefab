@@ -1159,7 +1159,7 @@ GameObject:
   - component: {fileID: 95840217286037454}
   m_Layer: 0
   m_Name: KitchenWarfare_p
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2307,6 +2307,9 @@ MonoBehaviour:
     gravityModifier: 9.81
     baseGravity: 50
     resetGravityValue: 0
+    groundLayers:
+      serializedVersion: 2
+      m_Bits: 1025
   movement:
     jumpSpeed: 10
     jumpTime: 0.25

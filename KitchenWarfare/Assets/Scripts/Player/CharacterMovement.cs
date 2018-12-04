@@ -27,6 +27,7 @@ public class CharacterMovement : MonoBehaviour
         public float gravityModifier = 9.81f;
         public float baseGravity = 50.0f;
         public float resetGravityValue = 1.2f;
+        public LayerMask groundLayers;
     }
     [SerializeField]
     public PhysicsSettings physics;
@@ -40,10 +41,23 @@ public class CharacterMovement : MonoBehaviour
     [SerializeField]
     public MovementSettings movement;
 
-    private bool isGrounded = true;
     private bool isJumping;    
     private bool resetGravity;
     private float gravity;
+
+    private bool IsGrounded()
+    {
+        RaycastHit hit;
+        Vector3 start = transform.position + transform.up;
+        Vector3 dir = Vector3.down;
+        float radius = charController.radius;
+        if (Physics.SphereCast(start, radius, dir, out hit, charController.height/2, physics.groundLayers))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     //Pre-load init
     private void Awake()
@@ -62,7 +76,7 @@ public class CharacterMovement : MonoBehaviour
     private void Update()
     {
         ApplyGravity();
-        isGrounded = charController.isGrounded;
+        //isGrounded = charController.isGrounded;
     }
 
     //Animate character
@@ -70,7 +84,7 @@ public class CharacterMovement : MonoBehaviour
     {
         animator.SetFloat(animations.verticalVelocityFloat, forward);
         animator.SetFloat(animations.horizontalVelocityFloat, strafe);
-        animator.SetBool(animations.groundedBool, isGrounded);
+        animator.SetBool(animations.groundedBool, IsGrounded());
         animator.SetBool(animations.jumpBool, isJumping);
     }
 
@@ -82,7 +96,7 @@ public class CharacterMovement : MonoBehaviour
             return;
         }
 
-        if (isGrounded)
+        if (IsGrounded())
         {
             isJumping = true;
             StartCoroutine(StopJump());

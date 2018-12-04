@@ -2,16 +2,11 @@
 ///<summary>
 ///Author: HyunJin, Seol
 ///Date Created: 11/30/2018
-///Describe what it does here
 ///This class is for the loading screen.
 ///This class receives next scene and opens it.
 /// while this class receives the next scene, this shows progress using loading bar.
 ///</summary>
-///<params>
-///it requires parameter about scene index number.
-///</params>
 //////////////////////////////
-
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -27,14 +22,14 @@ public class LoadingScreenControler : MonoBehaviour {
     ///Void type method
     ///this method takes the scene index number and calls IEnumerator
     ///</summary>
-    ///<params>
+    ///<param name="sceneIndex">
     ///It needs an integer type parameter
-    ///</params>
+    ///</param>
     //////////////////////////////
-
     public void LoadGame(int sceneIndex)
-    { 
-       StartCoroutine(LoadAsynchronously(sceneIndex));
+    {
+        //SceneManager.LoadScene("SampleScene");
+        StartCoroutine(LoadAsynchronously(sceneIndex));
     }
 
     //////////////////////////////
@@ -42,11 +37,10 @@ public class LoadingScreenControler : MonoBehaviour {
     ///IEnumerator
     ///This function loads the next scene and excutes it.
     ///</summary>
-    ///<params>
+    ///<param name="sceneIndex">
     ///It needs an integer type parameter which is scene index number.
-    ///</params>
+    ///</param>
     //////////////////////////////
-
     IEnumerator LoadAsynchronously(int sceneIndex)
     {
         AsyncOperation operation = SceneManager.LoadSceneAsync(sceneIndex);

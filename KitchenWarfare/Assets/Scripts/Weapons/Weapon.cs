@@ -10,6 +10,7 @@ public class Weapon : MonoBehaviour
     Collider col;
     Rigidbody rigidBody;
     Animator animator;
+    SoundController sound;
 
     public enum WeaponType
     {
@@ -75,6 +76,18 @@ public class Weapon : MonoBehaviour
     [SerializeField]
     public Ammunition ammunition;
 
+    [Serializable]
+    public class SoundSettings
+    {
+        public AudioClip[] shotSounds;
+        public AudioClip reloadSound;
+        [Range(0, 3)] public float pitchMin = 1;
+        [Range(0, 3)] public float pitchMax = 1.2f;
+        public AudioSource audio;
+    }
+    [SerializeField]
+    public SoundSettings soundSettings;
+
     public Ray shootRay { protected get; set; }
     public bool ownerAiming { get; set; }
 
@@ -86,6 +99,7 @@ public class Weapon : MonoBehaviour
 	// Use this for initialization
 	void Start ()
     {
+        sound = GameObject.FindGameObjectWithTag("Sound Controller").GetComponent<SoundController>();
         col = GetComponent<Collider>();
         rigidBody = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
@@ -128,6 +142,7 @@ public class Weapon : MonoBehaviour
             else
             {
                 Unequip(weaponsType);
+                CrosshairToggle(false);
             }
         }
         else
@@ -153,7 +168,7 @@ public class Weapon : MonoBehaviour
 
         aDirection += (Vector3)UnityEngine.Random.insideUnitCircle * wepSettings.ammoSpread;
 
-        if (Physics.Raycast(aSpawnPoint, aDirection, out hit ,wepSettings.range, wepSettings.ammoLayers))
+        if (Physics.Raycast(aSpawnPoint, aDirection, out hit, wepSettings.range, wepSettings.ammoLayers))
         {
             HitEffects(hit);
         }
@@ -224,6 +239,20 @@ public class Weapon : MonoBehaviour
                 Destroy(shell, UnityEngine.Random.Range(30.0f, 45.0f));
             }
         }
+
+        if (sound == null)
+        {
+            return;
+        }
+
+        if (soundSettings.audio != null)
+        {
+            if (soundSettings.shotSounds.Length > 0)
+            {
+                sound.InstansiateClip(wepSettings.ammoSpawn.position, soundSettings.shotSounds[UnityEngine.Random.Range(0, soundSettings.shotSounds.Length)],
+                    2, true, soundSettings.pitchMin, soundSettings.pitchMax);
+            }
+        }
     }
     
     //Toggle crosshair
@@ -231,6 +260,8 @@ public class Weapon : MonoBehaviour
     {
         if (wepSettings.crosshair != null)
         {
+            Vector3 camCenter = new Vector3(Screen.width / 2, Screen.height / 2, Camera.main.nearClipPlane);
+            wepSettings.crosshair.transform.position = Camera.main.ScreenToWorldPoint(camCenter);
             wepSettings.crosshair.SetActive(enabled);
         }
     }

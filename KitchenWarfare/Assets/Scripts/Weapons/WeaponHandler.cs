@@ -6,6 +6,7 @@ using UnityEngine;
 public class WeaponHandler : MonoBehaviour
 {
     Animator animator;
+    SoundController sound;
 
     [Serializable]
     public class UserSettings
@@ -38,6 +39,7 @@ public class WeaponHandler : MonoBehaviour
 	// Use this for initialization
 	void Start ()
     {
+        sound = GameObject.FindGameObjectWithTag("Sound Controller").GetComponent<SoundController>();
         animator = GetComponent<Animator>();
 	}
 	
@@ -142,6 +144,18 @@ public class WeaponHandler : MonoBehaviour
         if (currentWeapon.ammunition.carryingAmmo <= 0 || currentWeapon.ammunition.magAmmo == currentWeapon.ammunition.maxMagAmmo)
         {
             return;
+        }
+
+        if (sound != null)
+        {
+            if (currentWeapon.soundSettings.reloadSound != null)
+            {
+                if (currentWeapon.soundSettings.audio != null)
+                {
+                    sound.PlaySound(currentWeapon.soundSettings.audio, currentWeapon.soundSettings.reloadSound, true, 
+                        currentWeapon.soundSettings.pitchMin, currentWeapon.soundSettings.pitchMax);
+                }
+            }
         }
 
         reload = true;
