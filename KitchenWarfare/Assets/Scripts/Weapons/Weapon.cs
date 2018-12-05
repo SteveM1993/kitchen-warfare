@@ -164,7 +164,7 @@ public class Weapon : MonoBehaviour
         RaycastHit hit;
         Transform aSpawn = wepSettings.ammoSpawn;
         Vector3 aSpawnPoint = aSpawn.position;
-        Vector3 aDirection = ray.GetPoint(wepSettings.range);
+        Vector3 aDirection = ray.GetPoint(wepSettings.range) - aSpawnPoint;
 
         aDirection += (Vector3)UnityEngine.Random.insideUnitCircle * wepSettings.ammoSpread;
 
